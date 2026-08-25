@@ -23,6 +23,16 @@ Before considering a change complete, run all three steps from `socops/`:
 - For board changes, update and validate both `BoardAssembler.java` and its mirrored functions in [game.html](socops/src/main/resources/templates/game.html).
 - For UI changes, preserve [app.css](socops/src/main/resources/static/css/app.css) utilities and follow [CSS instructions](.github/instructions/css-utilities.instructions.md) and [frontend design instructions](.github/instructions/frontend-design.instructions.md).
 
+## Design guide (Space Galaxy Glow)
+
+- Treat the visual direction as cinematic dark sci-fi: deep navy backgrounds, cyan/ice accents, warm amber only for victory states.
+- Keep theme tokens centralized in [app.css](socops/src/main/resources/static/css/app.css) under `:root`; prefer reusing variables over adding hard-coded colors.
+- Preserve existing utility class names when possible; add new utility/composition classes instead of inline styles.
+- Prioritize readability on dense tiles: short line-height, strong foreground contrast, and clear selected/winning differentiation.
+- Use motion intentionally: quick reveal/feedback animations are preferred; avoid long-running or distracting loops on interactive elements.
+- Maintain functional invariants while styling [game.html](socops/src/main/resources/templates/game.html): 5x5 grid integrity, free-cell affordance, and victory visibility hierarchy (tile state, banner, modal).
+- Validate both desktop and mobile behavior after UI updates (tap targets, text wrapping, and modal fit).
+
 ## References
 
 - Use the [README](README.md) and [workshop guide](workshop/GUIDE.md) for setup and lab context.
