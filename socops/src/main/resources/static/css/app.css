@@ -243,6 +243,110 @@ button:not(:disabled):hover {
     pointer-events: none;
 }
 
+.lobby-command {
+    position: relative;
+    padding: 1.4rem 1.3rem 1.3rem;
+    border: 1px solid rgba(132, 180, 255, 0.4);
+    border-radius: 0.9rem;
+    background:
+        linear-gradient(165deg, rgba(12, 19, 40, 0.9), rgba(9, 14, 30, 0.93)),
+        repeating-linear-gradient(
+            90deg,
+            rgba(108, 166, 255, 0.09) 0,
+            rgba(108, 166, 255, 0.09) 1px,
+            transparent 1px,
+            transparent 26px
+        );
+    box-shadow:
+        0 28px 62px rgba(2, 8, 23, 0.58),
+        inset 0 0 0 1px rgba(172, 215, 255, 0.09);
+    overflow: hidden;
+}
+
+.lobby-command::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 88% 12%, rgba(83, 199, 255, 0.25), transparent 34%),
+        linear-gradient(145deg, rgba(85, 208, 255, 0.08), transparent 52%);
+    pointer-events: none;
+}
+
+.lobby-command > * {
+    position: relative;
+    z-index: 1;
+}
+
+.ops-kicker {
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    padding: 0.15rem 0.45rem;
+    border: 1px solid rgba(148, 211, 255, 0.45);
+    border-radius: 0.25rem;
+    color: #c6ebff;
+    letter-spacing: 0.12rem;
+    background: rgba(15, 31, 64, 0.64);
+}
+
+.ops-statusline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-bottom: 0.95rem;
+    font-size: 0.78rem;
+    line-height: 1.2;
+    color: #b2ffeb;
+    letter-spacing: 0.03rem;
+}
+
+.ops-statusdot {
+    width: 0.52rem;
+    height: 0.52rem;
+    border-radius: 999px;
+    background: #6fffe3;
+    box-shadow: 0 0 12px rgba(130, 255, 231, 0.8);
+}
+
+.ops-objective {
+    line-height: 1.35;
+}
+
+.ops-sequence {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.55rem;
+}
+
+.ops-sequence li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid rgba(126, 173, 255, 0.32);
+    border-radius: 0.4rem;
+    background: rgba(16, 27, 55, 0.62);
+}
+
+.ops-step {
+    font-weight: 700;
+    font-size: 0.72rem;
+    letter-spacing: 0.08rem;
+    color: #8fd7ff;
+}
+
+.ops-primary {
+    position: relative;
+}
+
+.ops-primary:focus-visible {
+    outline: 2px solid rgba(176, 226, 255, 0.95);
+    outline-offset: 2px;
+}
+
 .lobby-panel,
 .galaxy-header,
 .victory-card {
@@ -403,4 +507,11 @@ button:not(:disabled):hover {
     .galaxy-title { letter-spacing: 0.12rem; }
     .lobby-panel { padding: 1.2rem; }
     .galaxy-grid { padding: 0.35rem; }
+    .lobby-command {
+        padding: 1.1rem 1rem 1rem;
+        border-radius: 0.75rem;
+    }
+    .ops-sequence li {
+        padding: 0.44rem 0.5rem;
+    }
 }
