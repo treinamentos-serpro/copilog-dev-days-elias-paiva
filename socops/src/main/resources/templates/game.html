@@ -20,26 +20,46 @@
 <!-- ============================================================= -->
 <!--  LOBBY — visible before a game starts                          -->
 <!-- ============================================================= -->
-<div id="lobbyView" class="flex flex-col items-center justify-center min-h-full p-6 bg-gray-50 reveal-in">
-    <div class="text-center max-w-sm">
-        <h1 class="text-4xl font-bold text-gray-900 mb-2 galaxy-title">Soc Ops</h1>
-        <p class="text-lg text-gray-600 mb-8 galaxy-subtitle">Social Bingo</p>
-
-        <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200 mb-8 lobby-panel">
-            <h2 class="font-semibold text-gray-800 mb-3">How to play</h2>
-            <ul class="text-left text-gray-600 text-sm space-y-2 howto-card p-4 rounded">
-                <li>• Find people who match the questions</li>
-                <li>• Tap a square when you find a match</li>
-                <li>• Get 5 in a row to win!</li>
-            </ul>
-        </div>
+<main id="lobbyView" class="lobby-landing reveal-in">
+    <section class="lobby-intro" aria-labelledby="lobbyTitle">
+        <p class="lobby-eyebrow">Social briefing 01</p>
+        <h1 id="lobbyTitle" class="lobby-title">Soc <span>Ops</span></h1>
+        <p class="lobby-kicker">Social bingo for curious rooms.</p>
+        <p class="lobby-description">Turn introductions into a small mission: find the stories behind the people around you, then claim your line.</p>
 
         <button onclick="launchGame()"
-                class="w-full bg-accent text-white font-semibold py-4 px-8 rounded-lg text-lg accent-active transition-colors galaxy-button">
-            Start Game
+                class="lobby-launch bg-accent text-white font-semibold accent-active galaxy-button">
+            Launch a board <span aria-hidden="true">&#8594;</span>
         </button>
-    </div>
-</div>
+        <button onclick="launchScavengerHunt()"
+                class="lobby-hunt-launch font-semibold galaxy-button">
+            Start Scavenger Hunt <span aria-hidden="true">&#8594;</span>
+        </button>
+        <p class="lobby-note">Fresh prompts every round</p>
+    </section>
+
+    <section class="lobby-orbit" aria-label="Preview of a Social Bingo board">
+        <div class="orbit-ring orbit-ring-one"></div>
+        <div class="orbit-ring orbit-ring-two"></div>
+        <div class="lobby-board-preview">
+            <div class="preview-topline"><span>Live signal</span><span>5 x 5</span></div>
+            <div class="preview-grid" aria-hidden="true">
+                <span></span><span></span><span class="preview-marked"></span><span></span><span></span>
+                <span></span><span class="preview-marked"></span><span></span><span></span><span></span>
+                <span></span><span></span><span class="preview-free">Free</span><span></span><span></span>
+                <span></span><span></span><span></span><span class="preview-marked"></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <p class="preview-caption">A conversation is your next move.</p>
+        </div>
+    </section>
+
+    <section class="lobby-steps" aria-label="How to play">
+        <div class="lobby-step"><span>01</span><p>Meet someone new</p></div>
+        <div class="lobby-step"><span>02</span><p>Find a matching story</p></div>
+        <div class="lobby-step"><span>03</span><p>Build a line of five</p></div>
+    </section>
+</main>
 
 <!-- ============================================================= -->
 <!--  ACTIVE GAME — board, header, optional bingo banner            -->
@@ -78,6 +98,35 @@
 </div>
 
 <!-- ============================================================= -->
+<!--  SCAVENGER HUNT — independent 24-item checklist               -->
+<!-- ============================================================= -->
+<div id="scavengerView" class="scavenger-view" style="display:none">
+    <header class="flex items-center justify-between p-3 bg-white border-b border-gray-200 galaxy-header">
+        <button onclick="retreatScavengerToLobby()"
+                class="text-gray-500 text-sm px-3 py-1\.5 rounded tile-active galaxy-button">
+            &#8592; Back
+        </button>
+        <h1 class="font-bold text-gray-900 galaxy-subtitle">Scavenger Hunt</h1>
+        <div class="w-16"></div>
+    </header>
+
+    <main class="scavenger-content" aria-labelledby="scavengerTitle">
+        <div class="scavenger-heading">
+            <p class="lobby-eyebrow">Field checklist</p>
+            <h2 id="scavengerTitle">Find the people behind the prompts.</h2>
+            <div class="scavenger-progress-row">
+                <span id="scavengerCount" aria-live="polite">0 of 24 complete</span>
+                <button onclick="launchScavengerHunt()" class="scavenger-refresh galaxy-button" aria-label="Start a new Scavenger Hunt list">New list</button>
+            </div>
+            <div class="scavenger-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0" aria-label="Scavenger Hunt progress">
+                <div id="scavengerProgress" class="scavenger-progress-fill"></div>
+            </div>
+        </div>
+        <div id="scavengerList" class="scavenger-list" aria-label="Scavenger Hunt checklist"></div>
+    </main>
+</div>
+
+<!-- ============================================================= -->
 <!--  VICTORY MODAL — overlays the board                            -->
 <!-- ============================================================= -->
 <div id="victoryOverlay"
@@ -104,6 +153,8 @@
     var SIDE = 5;
     var TOTAL_CELLS = SIDE * SIDE;
     var PERSIST_KEY = "socops-bingo-snapshot";
+    var SCAVENGER_PERSIST_KEY = "socops-scavenger-snapshot";
+    var LAST_VIEW_KEY = "socops-last-view";
 
     /* ── state ────────────────────────────────────────────────── */
     var liveTiles   = [];          /* Array of BingoCell objects  */
@@ -111,6 +162,7 @@
     var modalShown  = false;
     var currentPhase = "LOBBY";    /* LOBBY | ACTIVE | VICTORY    */
     var animateTiles = false;
+    var scavengerItems = [];
 
     /* ── DOM refs ─────────────────────────────────────────────── */
     var lobbyDiv   = document.getElementById("lobbyView");
@@ -118,14 +170,20 @@
     var gridDiv    = document.getElementById("gridContainer");
     var bannerDiv  = document.getElementById("bingoBanner");
     var overlayDiv = document.getElementById("victoryOverlay");
+    var scavengerDiv = document.getElementById("scavengerView");
+    var scavengerListDiv = document.getElementById("scavengerList");
+    var scavengerCountDiv = document.getElementById("scavengerCount");
+    var scavengerProgressDiv = document.getElementById("scavengerProgress");
+    var scavengerProgressTrack = scavengerProgressDiv.parentElement;
 
     /* ── phase switching ──────────────────────────────────────── */
     function showPhase(phase) {
         currentPhase = phase;
         lobbyDiv.style.display   = (phase === "LOBBY") ? "" : "none";
-        activeDiv.style.display  = (phase !== "LOBBY") ? "" : "none";
-        bannerDiv.style.display  = (streakFound)       ? "" : "none";
-        overlayDiv.style.display = (modalShown)        ? "" : "none";
+        activeDiv.style.display  = (phase === "ACTIVE" || phase === "VICTORY") ? "" : "none";
+        scavengerDiv.style.display = (phase === "SCAVENGER") ? "" : "none";
+        bannerDiv.style.display  = (streakFound && phase !== "SCAVENGER") ? "" : "none";
+        overlayDiv.style.display = (modalShown && phase !== "SCAVENGER") ? "" : "none";
     }
 
     /* ── board rendering ──────────────────────────────────────── */
@@ -297,6 +355,68 @@
         } catch (_) { return false; }
     }
 
+    /* ── Scavenger Hunt ───────────────────────────────────────── */
+    function paintScavengerList() {
+        scavengerListDiv.innerHTML = "";
+        var completed = 0;
+
+        for (var itemIndex = 0; itemIndex < scavengerItems.length; itemIndex++) {
+            var item = scavengerItems[itemIndex];
+            var label = document.createElement("label");
+            label.className = "scavenger-item" + (item.selected ? " scavenger-item-done" : "");
+
+            var checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = item.selected;
+            checkbox.setAttribute("aria-label", item.prompt);
+            checkbox.addEventListener("change", (function (itemId) {
+                return function () { toggleScavengerItem(itemId); };
+            })(item.id));
+
+            var copy = document.createElement("span");
+            copy.textContent = item.prompt;
+            label.appendChild(checkbox);
+            label.appendChild(copy);
+            scavengerListDiv.appendChild(label);
+
+            if (item.selected) { completed++; }
+        }
+
+        scavengerCountDiv.textContent = completed + " of " + scavengerItems.length + " complete";
+        scavengerProgressDiv.style.width = (scavengerItems.length ? completed / scavengerItems.length * 100 : 0) + "%";
+        scavengerProgressTrack.setAttribute("aria-valuenow", String(completed));
+        scavengerProgressTrack.setAttribute("aria-valuemax", String(scavengerItems.length));
+    }
+
+    function toggleScavengerItem(itemId) {
+        scavengerItems = scavengerItems.map(function (item) {
+            if (item.id === itemId) {
+                return { id: item.id, prompt: item.prompt, selected: !item.selected, freeCell: false };
+            }
+            return item;
+        });
+        persistScavengerSnapshot();
+        paintScavengerList();
+    }
+
+    function persistScavengerSnapshot() {
+        try {
+            localStorage.setItem(SCAVENGER_PERSIST_KEY, JSON.stringify({ items: scavengerItems }));
+            localStorage.setItem(LAST_VIEW_KEY, "SCAVENGER");
+        } catch (_) { /* storage full or unavailable */ }
+    }
+
+    function restoreScavengerSnapshot() {
+        try {
+            var raw = localStorage.getItem(SCAVENGER_PERSIST_KEY);
+            if (!raw) { return false; }
+            var snapshot = JSON.parse(raw);
+            if (!snapshot.items || snapshot.items.length !== 24) { return false; }
+            scavengerItems = snapshot.items;
+            return true;
+        } catch (_) { return false; }
+    }
+
     /* ── public API (called from onclick attrs) ───────────────── */
     window.launchGame = function () {
         fetch("/api/bingo/fresh-board")
@@ -308,8 +428,20 @@
                 currentPhase = "ACTIVE";
                 animateTiles = true;
                 persistSnapshot();
+                try { localStorage.setItem(LAST_VIEW_KEY, "ACTIVE"); } catch (_) { /* storage unavailable */ }
                 paintGrid();
                 showPhase("ACTIVE");
+            });
+    };
+
+    window.launchScavengerHunt = function () {
+        fetch("/api/scavenger/fresh-list")
+            .then(function (resp) { return resp.json(); })
+            .then(function (items) {
+                scavengerItems = items;
+                persistScavengerSnapshot();
+                paintScavengerList();
+                showPhase("SCAVENGER");
             });
     };
 
@@ -319,6 +451,13 @@
         modalShown  = false;
         currentPhase = "LOBBY";
         persistSnapshot();
+        try { localStorage.setItem(LAST_VIEW_KEY, "LOBBY"); } catch (_) { /* storage unavailable */ }
+        showPhase("LOBBY");
+    };
+
+    window.retreatScavengerToLobby = function () {
+        currentPhase = "LOBBY";
+        try { localStorage.setItem(LAST_VIEW_KEY, "LOBBY"); } catch (_) { /* storage unavailable */ }
         showPhase("LOBBY");
     };
 
@@ -329,7 +468,12 @@
     };
 
     /* ── boot ─────────────────────────────────────────────────── */
-    if (restoreSnapshot()) {
+    var lastView = null;
+    try { lastView = localStorage.getItem(LAST_VIEW_KEY); } catch (_) { /* storage unavailable */ }
+    if (lastView === "SCAVENGER" && restoreScavengerSnapshot()) {
+        paintScavengerList();
+        showPhase("SCAVENGER");
+    } else if (restoreSnapshot()) {
         paintGrid();
         showPhase(currentPhase);
     } else {

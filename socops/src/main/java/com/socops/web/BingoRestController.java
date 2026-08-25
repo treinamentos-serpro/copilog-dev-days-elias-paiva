@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.socops.model.BingoCell;
 import com.socops.service.BoardAssembler;
+import com.socops.service.ScavengerHuntAssembler;
 
 /** Serves the game page and the board-generation REST endpoint. */
 @Controller
@@ -22,5 +23,11 @@ public class BingoRestController {
     @ResponseBody
     public List<BingoCell> dispenseFreshBoard() {
         return BoardAssembler.assembleNewBoard();
+    }
+
+    @GetMapping("/api/scavenger/fresh-list")
+    @ResponseBody
+    public List<BingoCell> dispenseFreshScavengerList() {
+        return ScavengerHuntAssembler.assembleNewList();
     }
 }
