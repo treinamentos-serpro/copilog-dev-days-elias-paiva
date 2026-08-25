@@ -21,24 +21,36 @@
 <!--  LOBBY — visible before a game starts                          -->
 <!-- ============================================================= -->
 <div id="lobbyView" class="flex flex-col items-center justify-center min-h-full p-6 bg-gray-50 reveal-in">
-    <div class="text-center max-w-sm">
-        <h1 class="text-4xl font-bold text-gray-900 mb-2 galaxy-title">Soc Ops</h1>
-        <p class="text-lg text-gray-600 mb-8 galaxy-subtitle">Social Bingo</p>
+    <main class="w-full max-w-md text-center lobby-shell" aria-labelledby="lobbyTitle">
+        <header class="mb-4">
+            <h1 id="lobbyTitle" class="text-4xl font-bold text-gray-900 mb-2 galaxy-title">Soc Ops</h1>
+            <p class="text-lg text-gray-600 galaxy-subtitle">Social Bingo</p>
+        </header>
 
-        <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200 mb-8 lobby-panel">
-            <h2 class="font-semibold text-gray-800 mb-3">How to play</h2>
-            <ul class="text-left text-gray-600 text-sm space-y-2 howto-card p-4 rounded">
-                <li>• Find people who match the questions</li>
-                <li>• Tap a square when you find a match</li>
-                <li>• Get 5 in a row to win!</li>
-            </ul>
-        </div>
+        <section class="bg-white rounded-lg p-4 shadow-sm border border-gray-200 mb-4 lobby-panel lobby-play-card" aria-label="Board preview">
+            <p class="text-sm text-gray-500 mb-3 lobby-kicker">Jump in fast — one tap to launch</p>
+            <div class="mini-board" role="img" aria-label="Miniature 5 by 5 bingo board with a free center tile">
+                <span class="mini-tile"></span><span class="mini-tile"></span><span class="mini-tile mini-tile-marked"></span><span class="mini-tile"></span><span class="mini-tile"></span>
+                <span class="mini-tile"></span><span class="mini-tile mini-tile-marked"></span><span class="mini-tile"></span><span class="mini-tile"></span><span class="mini-tile mini-tile-marked"></span>
+                <span class="mini-tile"></span><span class="mini-tile"></span><span class="mini-tile mini-tile-free">FREE</span><span class="mini-tile mini-tile-marked"></span><span class="mini-tile"></span>
+                <span class="mini-tile mini-tile-marked"></span><span class="mini-tile"></span><span class="mini-tile"></span><span class="mini-tile"></span><span class="mini-tile"></span>
+                <span class="mini-tile"></span><span class="mini-tile mini-tile-marked"></span><span class="mini-tile"></span><span class="mini-tile"></span><span class="mini-tile"></span>
+            </div>
+        </section>
+
+        <section class="bg-white rounded-lg p-4 shadow-sm border border-gray-200 mb-4 lobby-panel" aria-label="How to play">
+            <ol class="lobby-steps text-left text-sm text-gray-700">
+                <li><span class="step-dot">1</span><span>Spot someone who matches a tile prompt.</span></li>
+                <li><span class="step-dot">2</span><span>Tap the square to lock your social find.</span></li>
+                <li><span class="step-dot">3</span><span>Chain five in a row and call BINGO.</span></li>
+            </ol>
+        </section>
 
         <button onclick="launchGame()"
                 class="w-full bg-accent text-white font-semibold py-4 px-8 rounded-lg text-lg accent-active transition-colors galaxy-button">
             Start Game
         </button>
-    </div>
+    </main>
 </div>
 
 <!-- ============================================================= -->
